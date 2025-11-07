@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       // The app will always start with the SplashScreen.
-      home: const SplashScreen(),
+      home: SplashScreen(),
     );
   }
 }

@@ -1,4 +1,4 @@
-import 'package:expense_splitter/authentication_screens/registration_screen.dart';
+import 'package:expense_splitter/dummy_/registration_screen.dart';
 import 'package:expense_splitter/view/screens/main_nav_screens.dart';
 import 'package:flutter/material.dart';
 

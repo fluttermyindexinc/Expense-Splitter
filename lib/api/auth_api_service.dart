@@ -4,8 +4,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 class AuthApiService {
-  final String _baseUrl = dotenv.env['BASE_URL']!;
-  final String _token = 'demo123';
+  final String? _baseUrl = dotenv.env['BASE_URL'];
+  final String? _token = dotenv.env['TOKEN'];
 
   Future<RegistrationResponse> registerUser({
     required String name,
@@ -37,6 +37,7 @@ class AuthApiService {
     required String countryCode,
   }) async {
     final Uri url = Uri.parse('$_baseUrl/login');
+    print(url);
     final response = await http.post(
       url,
       body: {

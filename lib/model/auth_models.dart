@@ -14,6 +14,43 @@ class RegistrationResponse {
   }
 }
 
+
+
+class User {
+  final int id;
+  final String name;
+  final String? email; 
+  final String mobile;
+  final String? countryCode;
+  final int is_banned;
+  final String username;
+  final String? dp;
+
+  User({
+    required this.id,
+    required this.name,
+    this.email,
+    required this.mobile,
+    this.countryCode,
+    required this.is_banned,
+    required this.username,
+    this.dp,
+  });
+
+  // This factory ensures data from JSON is correctly typed.
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id'],
+      name: json['name'],     
+      email: json['email'],
+      mobile: json['mobile'].toString(), // Ensures mobile is always a string
+      countryCode: json['country_code'],
+      is_banned: json['is_banned'],
+      username: json['username'],
+      dp: json['dp'],
+    );
+  }
+}
 class VerifyOtpResponse {
   final int status;
   final User user;
@@ -26,32 +63,6 @@ class VerifyOtpResponse {
       status: json['status'],
       user: User.fromJson(json['user']),
       message: json['message'],
-    );
-  }
-}
-
-class User {
-  final int id;
-  final String name;
-  final String email;
-  final String? mobile;
-  final String? countryCode;
-
-  User({
-    required this.id,
-    required this.name,
-    required this.email,
-    this.mobile,
-    this.countryCode,
-  });
-
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'],
-      name: json['name'],
-      email: json['email'],
-      mobile: json['mobile'],
-      countryCode: json['country_code'],
     );
   }
 }
