@@ -312,7 +312,7 @@ class _CreatedGroupPageState extends State<CreatedGroupPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          _buildAppBar(context),
+                          _buildAppBar(context, group),
                           const SizedBox(height: 2),
                           _buildHeader(group),
                           const SizedBox(height: 10),
@@ -519,39 +519,129 @@ class _CreatedGroupPageState extends State<CreatedGroupPage> {
 
   // --- WIDGET BUILD METHODS ---
 
-  Widget _buildAppBar(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black, size: 30),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        GestureDetector(
-          onTap: () => Navigator.push(
+  // Widget _buildAppBar(BuildContext context, Group group) {
+  //   return Row(
+  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //     children: [
+  //       IconButton(
+  //         icon: const Icon(Icons.arrow_back, color: Colors.black, size: 30),
+  //         onPressed: () => Navigator.of(context).pop(),
+  //       ),
+  //       GestureDetector(
+  //         // onTap: () => Navigator.push(
+  //         //   context,
+  //         //   MaterialPageRoute(builder: (context) => const TodoListPage()),
+  //         // ),
+  //         // onTap: () {
+  //         //   // Get the group object from the FutureBuilder's snapshot data.
+  //         //   // This assumes this widget is built inside the FutureBuilder's builder.
+  //         //   final group = (_groupDetailsFuture).asStream().first.group;
+
+  //         //   Navigator.push(
+  //         //     context,
+  //         //     MaterialPageRoute(
+  //         //       builder: (context) =>
+  //         //           TodoListPage(groupId: group.id, initialTodos: group.todos),
+  //         //     ),
+  //         //   );
+  //         // },
+  //         onTap: () {
+  //           // The 'group' object is now available here directly.
+  //           Navigator.push(
+  //             context,
+  //             MaterialPageRoute(
+  //               builder: (context) =>
+  //                   TodoListPage(groupId: group.id, initialTodos: group.todos),
+  //             ),
+  //           );
+  //         },
+  //         child: Column(
+  //           children: [
+  //             Icon(
+  //               Icons.note_alt,
+  //               color: Colors.white,
+  //               shadows: [Shadow(blurRadius: 2)],
+  //             ),
+  //             Text(
+  //               'Tasks',
+  //               style: TextStyle(
+  //                 shadows: [Shadow(blurRadius: 2)],
+  //                 color: Colors.white,
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
+  Widget _buildAppBar(BuildContext context, Group group) {
+  // --- NOTIFICATION LOGIC ---
+  // First, check if there are any pending tasks.
+  // A task is pending if its status is 0.
+  final bool hasPendingTasks = group.todos.any((todo) => todo.status == 0);
+
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.black, size: 30),
+        onPressed: () => Navigator.of(context).pop(),
+      ),
+      GestureDetector(
+        onTap: () {
+          // The 'group' object is available here.
+          Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const TodoListPage()),
-          ),
-          child: Column(
-            children: [
-              Icon(
-                Icons.note_alt,
-                color: Colors.white,
-                shadows: [Shadow(blurRadius: 2)],
+            MaterialPageRoute(
+              builder: (context) => TodoListPage(
+                groupId: group.id,
+                initialTodos: group.todos,
               ),
-              Text(
-                'Todo-List',
-                style: TextStyle(
-                  shadows: [Shadow(blurRadius: 2)],
+            ),
+          );
+          
+        },
+        child: Stack(
+          // Use a Stack to layer the notification dot on top of the icon.
+          clipBehavior: Clip.none, // Allow the dot to be visible outside the Stack's bounds
+          children: [
+            // Your original icon and text column
+            Column(
+              children: [
+                Icon(
+                  Icons.note_alt,
                   color: Colors.white,
+                  shadows: [Shadow(blurRadius: 2)],
+                ),
+                Text(
+                  'Tasks',
+                  style: TextStyle(
+                    shadows: [Shadow(blurRadius: 2)],
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+
+            // --- THE NOTIFICATION DOT ---
+            // This Positioned widget will only appear if there are pending tasks.
+            if (hasPendingTasks)
+              Positioned(
+                top: -5, // Adjust this value to move the dot vertically
+                right: 3, // Adjust this value to move the dot horizontally
+                child: CircleAvatar(
+                  radius: 8, // This is the size of the dot
+                  backgroundColor: Colors.red,
                 ),
               ),
-            ],
-          ),
+          ],
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
+
 
   Widget _buildHeader(Group group) {
     return Padding(
@@ -623,17 +713,80 @@ class _CreatedGroupPageState extends State<CreatedGroupPage> {
         _buildActionItem(
           label: 'Todo',
           imagePath: 'assets/images/bill.png',
-          onTap: () async {
-            final newTask = await showAddTaskDialog(context);
-            if (newTask != null && context.mounted) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => TodoListPage(initialTask: newTask),
-                ),
-              );
-            }
-          },
+          // onTap: () async {
+          //   final newTask = await showAddTaskDialog(context);
+          //   if (newTask != null && context.mounted) {
+          //     Navigator.push(
+          //       context,
+          //       MaterialPageRoute(
+          //         builder: (context) => TodoListPage(initialTask: newTask),
+          //       ),
+          //     );
+          //   }
+          // },
+          // onTap: () async {
+          //   // Get the group object from the FutureBuilder's snapshot data.
+          //   // This is a bit complex, but required by your current structure.
+          //   final group = (await _groupDetailsFuture).group;
+
+          //   // The dialog now requires a group ID.
+          //   final bool? taskWasAdded = await showAddTaskDialog(
+          //     context,
+          //     group.id,
+          //   );
+
+          //   // If the dialog returns true, it means a new task was added.
+          //   // We need to refresh the data.
+          //   if (taskWasAdded == true && mounted) {
+          //     setState(() {
+          //       // Re-fetch the group details to get the new list of todos.
+          //       _groupDetailsFuture = _detailsService.fetchGroupDetails(
+          //         widget.groupId,
+          //       );
+          //     });
+          //   }
+          // },
+//           onTap: () async {
+//   // Get the group object from the FutureBuilder's snapshot data.
+//   final group = (await _groupDetailsFuture).group;
+
+//   // The dialog now requires a group ID.
+//   // We still 'await' the dialog to make sure we only refresh after it closes.
+//   await showAddTaskDialog(
+//     context,
+//     group.id,
+//   );
+
+//   // --- THIS IS THE CHANGE ---
+//   // This code now runs every time the dialog is closed.
+//   // The 'if' check has been removed.
+//   if (mounted) {
+//     setState(() {
+//       // Re-fetch the group details to get the latest data.
+//       _groupDetailsFuture = _detailsService.fetchGroupDetails(
+//         widget.groupId,
+//       );
+//     });
+//   }
+// },
+onTap: () async { // 1. Make the function async
+          // 2. Navigate to the page and 'await' it.
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TodoListPage(
+                groupId: group.id,
+                initialTodos: group.todos,
+              ),
+            ),
+          );
+
+          // 3. This code now runs ONLY after the user returns.
+          //    We call setState to re-trigger the FutureBuilder.
+          setState(() {
+            _groupDetailsFuture = _detailsService.fetchGroupDetails(widget.groupId);
+          });
+        },
         ),
         _buildActionItem(
           onTap: () {},
@@ -1042,13 +1195,14 @@ class _ExpenseDetailsSectionState extends State<ExpenseDetailsSection> {
                     // The main content of the list item
                     child: GestureDetector(
                       onLongPress: isOwner
-                  ? () async {
-                      final confirm = await _showDeleteConfirmationDialog(expense);
-                      if (confirm == true) {
-                        await deleteExpense(index, expense);
-                      }
-                    }
-                  : null,
+                          ? () async {
+                              final confirm =
+                                  await _showDeleteConfirmationDialog(expense);
+                              if (confirm == true) {
+                                await deleteExpense(index, expense);
+                              }
+                            }
+                          : null,
                       child: Column(
                         children: [
                           _buildDetailedExpenseItem(

@@ -18,12 +18,11 @@ class Group {
   final int id;
   final String name;
   final double totalExpenses;
-  final int status; 
+  final int status;
   final List<Member> members;
   final List<Expense> expenses;
   final String link;
   final List<TodoModel> todos;
-  
 
   Group({
     required this.id,
@@ -42,10 +41,14 @@ class Group {
       name: json['name'],
       link: json['link'],
       totalExpenses: json["total_expenses"]?.toDouble() ?? 0.0,
-status: json["status"] ?? 1, 
-      members: (json['members'] as List).map((i) => Member.fromJson(i)).toList(),
-      expenses: (json['expenses'] as List).map((i) => Expense.fromJson(i)).toList(),
-      todos: (json['todos'] as List? ?? []).map((i) => TodoModel.fromJson(i)).toList(),
+      status: json["status"] ?? 1,
+      members: (json['members'] as List)
+          .map((i) => Member.fromJson(i))
+          .toList(),
+      expenses: (json['expenses'] as List)
+          .map((i) => Expense.fromJson(i))
+          .toList(),
+     todos: (json['todos'] as List? ?? []).map((i) => TodoModel.fromJson(i)).toList(),
     );
   }
 }
@@ -76,7 +79,6 @@ class Member {
       username: json['username'],
       isAdmin: json['is_admin'],
       profileImage: json['profile_image'],
-      // --- THE FIX: Handle both int and double from API ---
       balance: (json['balance'] as num).toInt(),
       paidPercentage: (json['paid_percentage'] as num).toInt(),
     );
@@ -119,8 +121,8 @@ class User {
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id'],
-      name: json['name'],
-      profileImage: json['profile_image']?? '',
+      name: json['name'] ?? 'Unnamed User',
+      profileImage: json['profile_image'] ?? '',
     );
   }
 }

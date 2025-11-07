@@ -1,324 +1,34 @@
-// // lib/screens/todo_list_page.dart
-
-// import 'package:flutter/material.dart';
-// // Make sure this path points to your reusable dialog file
-// import 'package:expense_splitter/view/screens/home/widgets/add_task_dialog.dart';
-
-// // A simple class to represent a task
-// class _Task {
-//   String description;
-//   bool isCompleted;
-
-//   _Task({required this.description, this.isCompleted = false});
-// }
-
-// // A reusable, transparent AppBar
-// // class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-// //   final String title;
-
-// //   const CustomAppBar({super.key, required this.title});
-
-// //   @override
-// //   Widget build(BuildContext context) {
-// //     return AppBar(
-// //       title: Text(
-// //         title,
-// //         style: const TextStyle(
-// //           color: Colors.white,
-// //           fontWeight: FontWeight.w400,
-// //         ),
-// //       ),
-// //       toolbarHeight: 80,
-// //        flexibleSpace: Container(
-// //           decoration: BoxDecoration(
-// //             gradient: LinearGradient(colors: [const Color.fromARGB(234, 13, 78, 197),const Color.fromARGB(234, 0, 19, 53)])
-// //           ),
-// //         ),
-// //       elevation: 0,
-// //       iconTheme: const IconThemeData(
-// //         color: Colors.white,
-// //       ), // Makes the back arrow white
-// //     );
-// //   }
-
-// //   @override
-// //   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-// // }
-
-// class TodoListPage extends StatefulWidget {
-//   final String? initialTask;
-
-//   const TodoListPage({super.key, this.initialTask});
-
-//   @override
-//   State<TodoListPage> createState() => _TodoListPageState();
-// }
-
-// class _TodoListPageState extends State<TodoListPage> {
-//   final List<_Task> _tasks = [];
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     if (widget.initialTask != null && widget.initialTask!.isNotEmpty) {
-//       _tasks.add(_Task(description: widget.initialTask!));
-//     }
-//   }
-
-//   List<_Task> get _activeTasks =>
-//       _tasks.where((task) => !task.isCompleted).toList();
-//   List<_Task> get _closedTasks =>
-//       _tasks.where((task) => task.isCompleted).toList();
-
-//   void _openAddTaskDialog() async {
-//     final newTaskDescription = await showAddTaskDialog(context);
-//     if (newTaskDescription != null) {
-//       setState(() {
-//         _tasks.insert(0, _Task(description: newTaskDescription));
-//       });
-//     }
-//   }
-
-//   void _toggleTaskCompletion(_Task task) {
-//     setState(() {
-//       task.isCompleted = !task.isCompleted;
-//     });
-//   }
-
-//   // FIX: New method to permanently delete a task
-//   void _deleteTask(_Task task) {
-//     setState(() {
-//       _tasks.remove(task);
-//     });
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: const Color(0xFFF0F2F5), // Light grey background
-//       appBar: AppBar(
-//         // automaticallyImplyLeading: false,
-//         backgroundColor: const Color.fromARGB(234, 0, 41, 118),
-//         flexibleSpace: Container(
-//           decoration: BoxDecoration(
-//             gradient: LinearGradient(
-//               colors: [
-//                 const Color.fromARGB(234, 13, 78, 197),
-//                 const Color.fromARGB(234, 0, 19, 53),
-//               ],
-//             ),
-//           ),
-//         ),
-//         toolbarHeight: 80,
-//         title: const Text(
-//           'Todo Tasks',
-//           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w400),
-//         ),
-//         foregroundColor: Colors.white,
-//       ),
-
-//       // extendBodyBehindAppBar: true,
-//       // appBar: const CustomAppBar(title: 'Todo List'),
-//       body: Container(
-//         // decoration: const BoxDecoration(
-//         //   image: DecorationImage(
-//         //     image: AssetImage(
-//         //       'assets/images/change-modified.jpg',
-//         //     ), // Your background image
-//         //     fit: BoxFit.cover,
-//         //   ),
-//         // ),
-//         child: SafeArea(
-//           child: Padding(
-//             padding: const EdgeInsets.all(16.0),
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 // --- Active Tasks Section ---
-//                 const Text(
-//                   'Active Tasks',
-//                   style: TextStyle(
-//                     fontSize: 20,
-//                     fontWeight: FontWeight.bold,
-//                     color: Colors.black,
-//                   ),
-//                 ),
-//                 const SizedBox(height: 10),
-//                 Expanded(
-//                   child: Container(
-//                     padding: const EdgeInsets.symmetric(vertical: 8),
-//                     decoration: BoxDecoration(
-//                       color: Colors.black.withOpacity(0.3),
-//                       borderRadius: BorderRadius.circular(12),
-//                     ),
-//                     child: _activeTasks.isEmpty
-//                         ? const Center(
-//                             child: Text(
-//                               'No active tasks. Great job!',
-//                               style: TextStyle(color: Colors.black),
-//                             ),
-//                           )
-//                         : ListView.separated(
-//                             itemCount: _activeTasks.length,
-//                             itemBuilder: (context, index) {
-//                               final task = _activeTasks[index];
-//                               // FIX: Use a custom ListTile for more control
-//                               return ListTile(
-//                                 onTap: () => _toggleTaskCompletion(task),
-//                                 leading: Checkbox(
-//                                   value: task.isCompleted,
-//                                   onChanged: (bool? value) =>
-//                                       _toggleTaskCompletion(task),
-//                                   activeColor: Colors.green,
-//                                   checkColor: Colors.white,
-//                                   side: const BorderSide(color: Colors.white),
-//                                 ),
-//                                 title: Text(
-//                                   task.description,
-//                                   style: const TextStyle(color: Colors.black),
-//                                 ),
-//                                 trailing: IconButton(
-//                                   icon: const Icon(
-//                                     Icons.delete_outline,
-//                                     color: Colors.redAccent,
-//                                   ),
-//                                   onPressed: () => _deleteTask(task),
-//                                   tooltip: 'Delete Task',
-//                                 ),
-//                               );
-//                             },
-//                             separatorBuilder: (context, index) => const Divider(
-//                               color: Colors.white24,
-//                               indent: 16,
-//                               endIndent: 16,
-//                             ),
-//                           ),
-//                   ),
-//                 ),
-//                 const SizedBox(height: 20),
-
-//                 // --- Closed Tasks Section ---
-//                 const Text(
-//                   'Closed Tasks',
-//                   style: TextStyle(
-//                     fontSize: 20,
-//                     fontWeight: FontWeight.bold,
-//                     color: Colors.black,
-//                   ),
-//                 ),
-//                 const SizedBox(height: 10),
-//                 Expanded(
-//                   child: Container(
-//                     padding: const EdgeInsets.symmetric(vertical: 8),
-//                     decoration: BoxDecoration(
-//                       color: Colors.black.withOpacity(0.3),
-//                       borderRadius: BorderRadius.circular(12),
-//                     ),
-//                     child: _closedTasks.isEmpty
-//                         ? const Center(
-//                             child: Text(
-//                               'No completed tasks yet.',
-//                               style: TextStyle(color: Colors.black),
-//                             ),
-//                           )
-//                         : ListView.separated(
-//                             itemCount: _closedTasks.length,
-//                             itemBuilder: (context, index) {
-//                               final task = _closedTasks[index];
-//                               // FIX: Use a custom ListTile here as well
-//                               return ListTile(
-//                                 onTap: () => _toggleTaskCompletion(task),
-//                                 leading: Checkbox(
-//                                   value: task.isCompleted,
-//                                   onChanged: (bool? value) =>
-//                                       _toggleTaskCompletion(task),
-//                                   activeColor: Colors.grey,
-//                                   side: const BorderSide(color: Colors.grey),
-//                                 ),
-//                                 title: Text(
-//                                   task.description,
-//                                   style: const TextStyle(
-//                                     color: Colors.black,
-//                                     decoration: TextDecoration.lineThrough,
-//                                   ),
-//                                 ),
-//                                 trailing: IconButton(
-//                                   icon: const Icon(
-//                                     Icons.delete_outline,
-//                                     color: Color.fromARGB(255, 137, 0, 0),
-//                                   ),
-//                                   onPressed: () => _deleteTask(task),
-//                                   tooltip: 'Delete Task',
-//                                 ),
-//                               );
-//                             },
-//                             separatorBuilder: (context, index) => const Divider(
-//                               color: Colors.white24,
-//                               indent: 16,
-//                               endIndent: 16,
-//                             ),
-//                           ),
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           ),
-//         ),
-//       ),
-//       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-//       floatingActionButton:
-//       //  Padding(
-//         // padding: const EdgeInsets.only(bottom: 617.0),
-//         // child: 
-//         SizedBox(
-//           width: 50.0,
-//           height: 50.0,
-//           child: FloatingActionButton(
-//             backgroundColor: Color(0xFFFF013A),
-//             onPressed: _openAddTaskDialog,
-//             tooltip: 'Add Task',
-//             child: const Icon(Icons.add, color: Colors.white),
-//           ),
-//         ),
-//       // ),
-//     );
-//   }
-// }
-
+// lib/view/screens/home/todo_list_page.dart
 
 import 'package:flutter/material.dart';
-// Make sure this path points to your reusable dialog file
+import 'package:expense_splitter/model/todo_model.dart';
+import 'package:expense_splitter/api/todo_update_service.dart';
 import 'package:expense_splitter/view/screens/home/widgets/add_task_dialog.dart';
 
-// A simple class to represent a task
-class _Task {
-  String description;
-  bool isCompleted;
-
-  _Task({required this.description, this.isCompleted = false});
-}
-
 class TodoListPage extends StatefulWidget {
-  final String? initialTask;
+  final int groupId;
+  final List<TodoModel> initialTodos;
 
-  const TodoListPage({super.key, this.initialTask});
+  const TodoListPage({
+    super.key,
+    required this.groupId,
+    required this.initialTodos,
+  });
 
   @override
   State<TodoListPage> createState() => _TodoListPageState();
 }
 
-class _TodoListPageState extends State<TodoListPage>
-    with SingleTickerProviderStateMixin {
-  final List<_Task> _tasks = [];
+class _TodoListPageState extends State<TodoListPage> with SingleTickerProviderStateMixin {
+  late List<TodoModel> _tasks;
   late TabController _tabController;
+  final TodoUpdateService _updateService = TodoUpdateService();
 
   @override
   void initState() {
     super.initState();
+    _tasks = List.from(widget.initialTodos);
     _tabController = TabController(length: 2, vsync: this);
-    if (widget.initialTask != null && widget.initialTask!.isNotEmpty) {
-      _tasks.add(_Task(description: widget.initialTask!));
-    }
   }
 
   @override
@@ -327,139 +37,120 @@ class _TodoListPageState extends State<TodoListPage>
     super.dispose();
   }
 
-  List<_Task> get _activeTasks =>
-      _tasks.where((task) => !task.isCompleted).toList();
-  List<_Task> get _closedTasks =>
-      _tasks.where((task) => task.isCompleted).toList();
+  List<TodoModel> get _pendingTasks => _tasks.where((task) => !task.isCompleted).toList();
+  List<TodoModel> get _completedTasks => _tasks.where((task) => task.isCompleted).toList();
 
-  void _openAddTaskDialog() async {
-    final newTaskDescription = await showAddTaskDialog(context);
-    if (newTaskDescription != null) {
-      setState(() {
-        _tasks.insert(0, _Task(description: newTaskDescription));
-      });
+  Future<void> _openAddTaskDialog() async {
+    final bool? taskWasAdded = await showAddTaskDialog(context, widget.groupId);
+    // If a task was added, we pop this page and signal the parent to refresh.
+    if (taskWasAdded == true && mounted) {
+      Navigator.of(context).pop(true); // Return 'true' to CreatedGroupPage
     }
   }
 
-  void _toggleTaskCompletion(_Task task) {
+  void _toggleTaskCompletion(TodoModel task) async {
+    final originalStatus = task.status;
+    // Update the UI optimistically
     setState(() {
-      task.isCompleted = !task.isCompleted;
+      task.status = task.isCompleted ? 0 : 1;
     });
-  }
 
-  void _deleteTask(_Task task) {
-    setState(() {
-      _tasks.remove(task);
-    });
+    try {
+      await _updateService.updateTodoStatus(
+        taskId: task.id,
+        isCompleted: task.isCompleted,
+      );
+    } catch (e) {
+      // If the API call fails, revert the state and show an error
+      setState(() {
+        task.status = originalStatus;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Failed to update task: $e')));
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F2F5), // Light grey background
+      backgroundColor: const Color(0xFFF0F2F5),
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(234, 0, 41, 118),
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(image:AssetImage('assets/images/blueeee.jpg'),
-                  fit: BoxFit.cover, )
-            ),
-          ),
+        title: const Text('Todo Tasks'),
+        // backgroundColor: const Color.fromARGB(234, 0, 41, 118),
+        flexibleSpace:Container(
+decoration:BoxDecoration(image:DecorationImage(image: AssetImage('assets/images/blueeee.jpg'), fit: BoxFit.cover),) ) ,
         
-        toolbarHeight: 80,
-        title: const Text(
-          'Todo Tasks',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w400),
-        ),
+          
         foregroundColor: Colors.white,
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
           indicatorColor: Colors.white,
-          tabs: const [
-            Tab(text: 'Completed'),
-            Tab(text: 'Pending'),
-            
+          tabs: const [Tab(text: 'Pending'), Tab(text: 'Completed')],
+        ),
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            // Replace with your desired background image asset
+            image: AssetImage('assets/images/change-modified.jpg'), 
+            fit: BoxFit.cover, // This will cover the entire screen
+          ),
+        ),
+        child: TabBarView(
+          controller: _tabController,
+          children: [
+            _buildTaskList(_pendingTasks, 'All tasks have been completed!. Great job!'),
+            _buildTaskList(_completedTasks, 'No completed tasks yet.'),
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildTaskList(_closedTasks, 'No completed tasks yet.'),
-          _buildTaskList(_activeTasks, 'No active tasks. Great job!'),
-          
-        ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: SizedBox(
-        width: 50.0,
-        height: 50.0,
-        child: FloatingActionButton(
-          backgroundColor: const Color(0xFFFF013A),
-          onPressed: _openAddTaskDialog,
-          tooltip: 'Add Task',
-          child: const Icon(Icons.add, color: Colors.white),
-        ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _openAddTaskDialog,
+        backgroundColor: const Color(0xFFFF013A),
+        tooltip: 'Add Task',
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 
-  Widget _buildTaskList(List<_Task> tasks, String emptyListMessage) {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      child: tasks.isEmpty
-          ? Center(
-              child: Text(
-                emptyListMessage,
-                style: const TextStyle(color: Colors.black),
-              ),
-            )
-          : Container(
-            decoration: BoxDecoration(
-              // color: Colors.black.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(12),
+  Widget _buildTaskList(List<TodoModel> tasks, String emptyListMessage) {
+    if (tasks.isEmpty) {
+      return Center(child: Text(emptyListMessage));
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.all(8.0),
+      itemCount: tasks.length,
+      itemBuilder: (context, index) {
+        final task = tasks[index];
+        return Card(
+          color: Colors.white,
+          elevation: 2.0,
+          margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+          child: ListTile(
+            onTap: () => _toggleTaskCompletion(task),
+            leading: Checkbox(
+              value: task.isCompleted,
+              onChanged: (bool? value) => _toggleTaskCompletion(task),
+              activeColor: Colors.green,
             ),
-            child: ListView.separated(
-                itemCount: tasks.length,
-                itemBuilder: (context, index) {
-                  final task = tasks[index];
-                  return ListTile(
-                    onTap: () => _toggleTaskCompletion(task),
-                    leading: Checkbox(
-                      value: task.isCompleted,
-                      onChanged: (bool? value) => _toggleTaskCompletion(task),
-                      activeColor: task.isCompleted ? Colors.green : Colors.green,
-                      checkColor: Colors.white,
-                      side: const BorderSide(color: Colors.white),
-                    ),
-                    title: Text(
-                      task.description,
-                      style: TextStyle(
-                        color: Colors.black,
-                        decoration: task.isCompleted
-                            ? TextDecoration.lineThrough
-                            : TextDecoration.none,
-                      ),
-                    ),
-                    // trailing: IconButton(
-                    //   icon: const Icon(
-                    //     Icons.delete_outline,
-                    //     color: Colors.redAccent,
-                    //   ),
-                    //   onPressed: () => _deleteTask(task),
-                    //   tooltip: 'Delete Task',
-                    // ),
-                  );
-                },
-                separatorBuilder: (context, index) => const Divider(
-                  color: Colors.black,
-                  indent: 16,
-                  endIndent: 16,
-                ),
+            title: Text(
+              task.task,
+              style: TextStyle(
+                decoration: task.isCompleted ? TextDecoration.lineThrough : null,
               ),
+            ),
+            subtitle: Text(
+              'Assigned by: ${task.assignedTo.name}',
+              style: const TextStyle(fontSize: 10, color: Colors.grey),
+            ),
           ),
+        );
+      },
+      separatorBuilder: (context, index) => const SizedBox(height: 0),
     );
   }
 }

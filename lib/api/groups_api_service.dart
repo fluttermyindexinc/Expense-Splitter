@@ -5,8 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class GroupsApiService {
-  final String _baseUrl = dotenv.env['BASE_URL']!;
-  final String _token = dotenv.env['TOKEN']!;
+  final String? _baseUrl = dotenv.env['BASE_URL'];
+  final String? _token = dotenv.env['TOKEN'];
 
   Future<GroupsResponse> fetchGroups({required int status}) async {
     final prefs = await SharedPreferences.getInstance();
