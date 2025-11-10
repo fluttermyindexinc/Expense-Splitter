@@ -1,41 +1,47 @@
+import 'package:expense_splitter/api/groups_api_service.dart';
 import 'package:expense_splitter/authenticaton_screen/login_page.dart';
+import 'package:expense_splitter/model/group_list_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:expense_splitter/api/settings_api_service.dart';
 import 'package:expense_splitter/model/settings_model.dart';
+
 class AppDrawer extends StatefulWidget {
   final VoidCallback onNavigateToAllGroups;
   final VoidCallback onNavigateToProfile;
-final String userName;
+  final String userName;
   final String userUsername;
   final String? fullDpUrl;
 
-
-  const AppDrawer({super.key,required this.onNavigateToAllGroups,
-    required this.onNavigateToProfile,required this.userName,
+  const AppDrawer({
+    super.key,
+    required this.onNavigateToAllGroups,
+    required this.onNavigateToProfile,
+    required this.userName,
     required this.userUsername,
-    this.fullDpUrl,});
+    this.fullDpUrl,
+  });
 
   @override
   State<AppDrawer> createState() => _AppDrawerState();
 }
+
 class _AppDrawerState extends State<AppDrawer> {
   final SettingsApiService _settingsApiService = SettingsApiService();
   AppSettings? _appSettings;
 
-  // String _userName = 'User';
-  // String _userUsername = '...';
-  // String? _fullDpUrl;  
-
+  final GroupsApiService _groupsApiService = GroupsApiService();
+  late Future<GroupsResponse> _groupsFuture;
 
   @override
   void initState() {
     super.initState();
     _fetchAppSettings();
-    // _loadUserData();
+    _groupsFuture = _groupsApiService.fetchGroups(status: 1);
   }
 
   // Future<void> _loadUserData() async {
@@ -47,7 +53,7 @@ class _AppDrawerState extends State<AppDrawer> {
   //   setState(() {
   //     _userName = prefs.getString('name') ?? 'User';
   //     _userUsername = prefs.getString('username') ?? '...';
-      
+
   //     // 3. Construct the full URL if the filename exists
   //     if (dpFileName != null && dpFileName.isNotEmpty) {
   //       _fullDpUrl = '$dpBaseUrl/$dpFileName';
@@ -73,12 +79,15 @@ class _AppDrawerState extends State<AppDrawer> {
   Future<void> _launchURL(String? urlString) async {
     if (urlString != null && await canLaunchUrl(Uri.parse(urlString))) {
       print(urlString);
-      await launchUrl(Uri.parse(urlString), mode: LaunchMode.externalApplication);
+      await launchUrl(
+        Uri.parse(urlString),
+        mode: LaunchMode.externalApplication,
+      );
     } else {
       // Handle error, maybe show a snackbar
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open the link')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Could not open the link')));
     }
   }
 
@@ -123,93 +132,101 @@ class _AppDrawerState extends State<AppDrawer> {
   // }
 
   void _showLogoutDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (BuildContext dialogContext) {
-      return AlertDialog(
-        backgroundColor: Colors.transparent,
-        contentPadding: EdgeInsets.zero,
-        content: ClipRRect(
-          borderRadius: BorderRadius.circular(28.0),
-          child: Stack(
-            children: <Widget>[ 
-              Image.asset(
-                'assets/images/change-modified-alert-bg.jpg', 
-                 fit: BoxFit.cover,
-                height: 170, 
-                width: 300,
-                // color: Colors.black.withOpacity(0.9),   
-              ),  
-              Column(
-                mainAxisSize: MainAxisSize.min, 
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                         Text(
-                          'Logout',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
-                            color: Color(0xFF1A1E57)
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: Colors.transparent,
+          contentPadding: EdgeInsets.zero,
+          content: ClipRRect(
+            borderRadius: BorderRadius.circular(28.0),
+            child: Stack(
+              children: <Widget>[
+                Image.asset(
+                  'assets/images/change-modified-alert-bg.jpg',
+                  fit: BoxFit.cover,
+                  height: 170,
+                  width: 300,
+                  // color: Colors.black.withOpacity(0.9),
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text(
+                            'Logout',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                              color: Color(0xFF1A1E57),
+                            ),
                           ),
-                        ),
-                         SizedBox(height: 16),
-                         Text(
-                          'Are you sure you want to logout?',
-                          textAlign: TextAlign.center,
-                           style: TextStyle(
-                            color: Color(0xFF1A1E57)
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  // Buttons
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: <Widget>[
-                        TextButton(
-                          child: const Text(
-                            'Cancel',
-                            style: TextStyle(color: Color(0xFFFF013A)),
-                          ),
-                          onPressed: () => Navigator.of(dialogContext).pop(),
-                        ),
-                        TextButton(
-                          child: const Text(
-                            'OK',
+                          SizedBox(height: 16),
+                          Text(
+                            'Are you sure you want to logout?',
+                            textAlign: TextAlign.center,
                             style: TextStyle(color: Color(0xFF1A1E57)),
                           ),
-                          onPressed: () {
-                            Navigator.of(dialogContext).pop();
-                _logout(context);
-
-                          },
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+
+                    // Buttons
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: <Widget>[
+                          TextButton(
+                            child: const Text(
+                              'Cancel',
+                              style: TextStyle(color: Color(0xFFFF013A)),
+                            ),
+                            onPressed: () => Navigator.of(dialogContext).pop(),
+                          ),
+                          TextButton(
+                            child: const Text(
+                              'OK',
+                              style: TextStyle(color: Color(0xFF1A1E57)),
+                            ),
+                            onPressed: () {
+                              Navigator.of(dialogContext).pop();
+                              _logout(context);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-        
-        elevation: 24,
-        
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28.0),
-        ),
-      );
-    },
-  );
-}
+
+          elevation: 24,
+
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28.0),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showSuggestionModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Important for keyboard handling
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => const _SuggestionModal(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -220,8 +237,8 @@ class _AppDrawerState extends State<AppDrawer> {
             image: const AssetImage('assets/images/change-modified.jpg'),
             fit: BoxFit.cover,
             // colorFilter: ColorFilter.mode(
-              // Colors.black.withOpacity(0.2),
-              // BlendMode.darken,
+            // Colors.black.withOpacity(0.2),
+            // BlendMode.darken,
             // ),
           ),
         ),
@@ -236,32 +253,70 @@ class _AppDrawerState extends State<AppDrawer> {
             ),
             _buildBalanceSection(),
             const SizedBox(height: 10),
-             _buildDrawerItem(
-              icon: CupertinoIcons.group, 
-              text: 'All Groups', 
+            _buildDrawerItem(
+              icon: CupertinoIcons.group,
+              text: 'All Groups',
               onTap: () {
                 Navigator.of(context).pop(); // Close the drawer first
                 widget.onNavigateToAllGroups(); // Then call the callback
-              }
+              },
             ),
-            _buildDrawerItem(icon: CupertinoIcons.book, text: 'Blogs', onTap: () => _launchURL(_appSettings?.blogs)),
-            _buildDrawerItem(icon: CupertinoIcons.info, text: 'About Us', onTap: () => _launchURL(_appSettings?.about)),
-            _buildDrawerItem(icon: CupertinoIcons.mail, text: 'Contact Us', onTap: () => _launchURL(_appSettings?.contact)),
-            _buildDrawerItem(icon: CupertinoIcons.reply, text: 'Check for Updates', onTap: () => _launchURL(_appSettings?.playStore)),
-            _buildDrawerItem(icon: CupertinoIcons.doc_text, text: 'Terms of Use', onTap: () => _launchURL(_appSettings?.terms)),
-            _buildDrawerItem(icon: CupertinoIcons.shield, text: 'Privacy Policy', onTap: () => _launchURL(_appSettings?.privacy)),
+            _buildDrawerItem(
+              icon: CupertinoIcons.book,
+              text: 'Blogs',
+              onTap: () => _launchURL(_appSettings?.blogs),
+            ),
+            _buildDrawerItem(
+              icon: CupertinoIcons.info,
+              text: 'About Us',
+              onTap: () => _launchURL(_appSettings?.about),
+            ),
+            _buildDrawerItem(
+              icon: CupertinoIcons.mail,
+              text: 'Contact Us',
+              onTap: () => _launchURL(_appSettings?.contact),
+            ),
+            _buildDrawerItem(
+              icon: CupertinoIcons.reply,
+              text: 'Check for Updates',
+              onTap: () => _launchURL(_appSettings?.playStore),
+            ),
+            _buildDrawerItem(
+              icon: CupertinoIcons.doc_text,
+              text: 'Terms of Use',
+              onTap: () => _launchURL(_appSettings?.terms),
+            ),
+            _buildDrawerItem(
+              icon: CupertinoIcons.shield,
+              text: 'Privacy Policy',
+              onTap: () => _launchURL(_appSettings?.privacy),
+            ),
+            _buildDrawerItem(
+              icon: CupertinoIcons.chat_bubble_text,
+              text: 'Suggestion / Feedback',
+              onTap: () {
+                Navigator.of(context).pop(); // Close the drawer
+                _showSuggestionModal(context); // Show the modal
+              },
+            ),
             const Divider(color: Colors.white24, indent: 16, endIndent: 16),
             _buildDrawerItem(
-              icon: CupertinoIcons.profile_circled, 
-              text: 'Profile', 
+              icon: CupertinoIcons.profile_circled,
+              text: 'Profile',
               onTap: () {
                 Navigator.of(context).pop(); // Close the drawer
                 widget.onNavigateToProfile(); // Call the callback
-              }
+              },
             ),
             ListTile(
-              leading: const Icon(CupertinoIcons.square_arrow_left, color:Color(0xFFFF013A)),
-              title: const Text('Logout', style: TextStyle(color: Colors.black)),
+              leading: const Icon(
+                CupertinoIcons.square_arrow_left,
+                color: Color(0xFFFF013A),
+              ),
+              title: const Text(
+                'Logout',
+                style: TextStyle(color: Colors.black),
+              ),
               onTap: () => _showLogoutDialog(context),
             ),
           ],
@@ -270,7 +325,7 @@ class _AppDrawerState extends State<AppDrawer> {
     );
   }
 
-    Widget _buildDrawerHeader({
+  Widget _buildDrawerHeader({
     required String userName,
     required String userUsername,
     String? fullDpUrl,
@@ -284,7 +339,8 @@ class _AppDrawerState extends State<AppDrawer> {
             backgroundColor: Colors.grey.shade300,
             backgroundImage: (fullDpUrl != null && fullDpUrl.isNotEmpty)
                 ? NetworkImage(fullDpUrl)
-                : const AssetImage('assets/images/profile_pic.jpeg') as ImageProvider,
+                : const AssetImage('assets/images/profile_pic.jpeg')
+                      as ImageProvider,
           ),
           const SizedBox(width: 16),
           Column(
@@ -301,10 +357,7 @@ class _AppDrawerState extends State<AppDrawer> {
               const SizedBox(height: 4),
               Text(
                 userUsername, // Use the passed-in userUsername
-                style: const TextStyle(
-                  color: Colors.black45,
-                  fontSize: 14,
-                ),
+                style: const TextStyle(color: Colors.black45, fontSize: 14),
               ),
             ],
           ),
@@ -313,45 +366,72 @@ class _AppDrawerState extends State<AppDrawer> {
     );
   }
 
-
   Widget _buildBalanceSection() {
-   
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white10.withOpacity(0.1), 
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black.withOpacity(0.2)),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Total Balance',
-            style: TextStyle(color: Colors.black54, fontSize: 14),
+    return FutureBuilder<GroupsResponse>(
+      future: _groupsFuture,
+      builder: (context, snapshot) {
+        // Default to 0.0 if there's no data yet
+        final balance = snapshot.hasData ? snapshot.data!.balance : 0.0;
+        final currencyFormat = NumberFormat.currency(
+          locale: 'en_IN',
+          symbol: '₹',
+        );
+        final balanceString = currencyFormat.format(balance);
+        final balanceStringParts = balanceString.split('.');
+
+        // Determine color based on balance
+        final balanceColor = balance < 0 ? Colors.redAccent : Colors.green;
+
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white10.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.black.withOpacity(0.2)),
           ),
-          SizedBox(height: 8),    
-          Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '₹ -247',
-                style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold),
+              const Text(
+                'Total Balance',
+                style: TextStyle(color: Colors.black54, fontSize: 14),
               ),
-              Text(
-                '.67',
-                style: TextStyle(
-                    color: Colors.black38,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold),
-              ),
+              const SizedBox(height: 8),
+              if (snapshot.connectionState == ConnectionState.waiting)
+                const SizedBox(
+                  height: 36,
+                  child: Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              else
+                Row(
+                  children: [
+                    Text(
+                      balanceStringParts[0],
+                      style: TextStyle(
+                        color: balance == 0 ? Colors.black : balanceColor,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '.${balanceStringParts.length > 1 ? balanceStringParts[1] : '00'}',
+                      style: TextStyle(
+                        color: balance == 0
+                            ? Colors.black38
+                            : balanceColor.withOpacity(0.7),
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -369,44 +449,160 @@ class _AppDrawerState extends State<AppDrawer> {
   //   );
   // }
 
-  Widget _buildDrawerItem({required IconData icon, required String text,required VoidCallback onTap}) {
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String text,
+    required VoidCallback onTap,
+  }) {
     return ListTile(
       leading: Icon(icon, color: Colors.black54, size: 22),
-      title: Text(text, style: const TextStyle(color: Colors.black, fontSize: 16)),
-      trailing: const Icon(Icons.arrow_forward_ios, color: Colors.black38, size: 14),
+      title: Text(
+        text,
+        style: const TextStyle(color: Colors.black, fontSize: 16),
+      ),
+      trailing: const Icon(
+        Icons.arrow_forward_ios,
+        color: Colors.black38,
+        size: 14,
+      ),
       onTap: onTap,
     );
   }
 
-//   Widget _buildThemeToggle() {
-//     return Padding(
-//       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-//       child: Row(
-//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//         children: [
-//           const Row(
-//             children: [
-//               Icon(CupertinoIcons.moon, color: Colors.white70),
-//               SizedBox(width: 16),
-//               Text('Dark Mode', style: TextStyle(color: Colors.white, fontSize: 16)),
-//             ],
-//           ),
-//           Switch(
-//             value: true, // Example value
-//             onChanged: (value) {
-//               // TODO: Handle theme change
-//             },
-//             activeTrackColor: Colors.green.shade700,
-//             activeColor: Colors.white,
-//           ),
-//         ],
-//       ),
-//     );
-//   }
+  //   Widget _buildThemeToggle() {
+  //     return Padding(
+  //       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  //       child: Row(
+  //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //         children: [
+  //           const Row(
+  //             children: [
+  //               Icon(CupertinoIcons.moon, color: Colors.white70),
+  //               SizedBox(width: 16),
+  //               Text('Dark Mode', style: TextStyle(color: Colors.white, fontSize: 16)),
+  //             ],
+  //           ),
+  //           Switch(
+  //             value: true, // Example value
+  //             onChanged: (value) {
+  //               // TODO: Handle theme change
+  //             },
+  //             activeTrackColor: Colors.green.shade700,
+  //             activeColor: Colors.white,
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //   }
 }
 
+class _SuggestionModal extends StatefulWidget {
+  const _SuggestionModal();
 
+  @override
+  State<_SuggestionModal> createState() => _SuggestionModalState();
+}
 
+class _SuggestionModalState extends State<_SuggestionModal> {
+  final TextEditingController _controller = TextEditingController();
 
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(() {
+      setState(() {});
+    });
+  }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Container(
+        color: Colors.white10,
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          left: 20,
+          right: 20,
+          top: 20,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Suggestion / Feedback',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade400),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Stack(
+                children: [
+                  if (_controller.text.isEmpty)
+                    const Row(
+                      children: [
+                        Icon(CupertinoIcons.pen, color: Colors.grey),
+                        SizedBox(width: 8),
+                        Text(
+                          'write heree ...',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  TextField(
+                    controller: _controller,
+                    maxLines: 6,
+                    autofocus: true,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Align(
+            // alignment: Alignment.centerRight,
+            // child:
+            SizedBox(
+              width: double.infinity,
+              height: 60,
+              child: ElevatedButton(
+                onPressed: () {
+                  // You can handle the submission logic here
+                  print('Feedback submitted: ${_controller.text}');
+                  Navigator.of(context).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:const Color.fromRGBO(26, 86, 189, 1), // Background color
+                  foregroundColor: Colors.white, // Text color
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12), // Border radius
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ), // Optional
+                  elevation: 4, // Optional (shadow)
+                ),
+                child: const Text('Submit'),
+              ),
+            ),
+            // ),
+          ],
+        ),
+      ),
+    );
+  }
+}
